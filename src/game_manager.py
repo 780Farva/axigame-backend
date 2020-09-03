@@ -84,6 +84,8 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_completing(self):
+        self.drawing_name = None
+        self.drawing_object = None
         self.completed()
 
     def _reshape_strokes(self, drawing, scale=6):
@@ -115,8 +117,6 @@ class GameManager:
             return True
         except:
             return False
-        #finally:
-        #    return True
 
     def _draw_one_line(self, ad, l):
         start = l["x"][0], l["y"][0]
