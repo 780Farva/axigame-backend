@@ -19,12 +19,12 @@ log = logging.getLogger(__name__)
 
 axidraw_client = AxiDraw()
 quickdraw_client = QuickDrawData()
-game_manager = GameManager(axidraw_client, quickdraw_client, sim=True)
+game_manager = GameManager(axidraw_client, quickdraw_client)
 game_thread = None
+
 
 class GuessRequest(BaseModel):
     guess: str
-
 
 
 @app.post("/startGame")
@@ -34,7 +34,7 @@ async def start_game():
     if game_manager.state == "idle":
         if game_thread is not None:
             game_thread = None
-        game_thread =Thread(target=game_manager.start)
+        game_thread = Thread(target=game_manager.start)
         game_thread.start()
         return {"message": f"Game is now started."}
     else:
@@ -62,12 +62,12 @@ async def guess(guess_request: str):
             # Stop drawing, do next image
             print("Correct! Next image...")
             game_manager.correct_guess_early()
-        #return {"message": f"TODO: This guess was {guessed_correctly}."}
+        # return {"message": f"TODO: This guess was {guessed_correctly}."}
         print(f"TODO: This guess was {guessed_correctly}.")
         return True
     else:
         # TODO: Return with a meaningful status code
-        #return {"message": f"Not ready. Game is in state {game_manager.state}"}
+        # return {"message": f"Not ready. Game is in state {game_manager.state}"}
         print(f"Not ready. Game is in state {game_manager.state}")
         return False
 
