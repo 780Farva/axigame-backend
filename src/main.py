@@ -1,8 +1,13 @@
-from fastapi import FastAPI
+import logging
+
 import uvicorn
+from fastapi import FastAPI
+
 from game_manager import GameManager
 
 app = FastAPI()
+
+log = logging.getLogger(__name__)
 
 
 @app.post("/startGame")
@@ -19,6 +24,7 @@ async def guess():
 @app.post("/startCameraFeed")
 async def start_camera_feed():
     return {"message": "TODO: This will start the camera feed."}
+
 
 if __name__ == "__main__":
     game_manager = GameManager()
