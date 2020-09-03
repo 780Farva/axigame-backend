@@ -24,20 +24,21 @@ async def start_game():
     return {"message": f"Game is now in state: {game_manager.state}"}
 
 
-@app.post("/guess")
-async def guess(guess_request: GuessRequest):
-    guess = guess_request.guess.lower()
+@app.get("/guess_word/{guess_request}")
+async def guess(guess_request: str):
+    guess_word = guess_request.lower()
+    print(f'Guessed: {guess_request}')
     truth = game_manager.drawing_name
     if len(truth.split()) > 1:
-        # we have two words, let's guess at least one:
+        # we have two words, let's guess_word at least one:
         guessed_correctly = np.any([(fuzz.ratio(truth, word) > 85) for word in truth.split()])
     else:
-        guessed_correctly = fuzz.ratio(truth, guess) > 80
+        guessed_correctly = fuzz.ratio(truth, guess_word) > 80
     if guessed_correctly:
         # Stop drawing, do next image
         print('Correct! Next image...')
         game_manager.correct_guess_early()
-    return {"message": f"TODO: This guess was {guessed_correctly}."}
+    return {"message": f"TODO: This guess_word was {guessed_correctly}."}
 
 
 @app.post("/startCameraFeed")
