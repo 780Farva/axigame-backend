@@ -9,15 +9,21 @@ log = logging.getLogger(__name__)
 class GameManager:
     """Handles the game's states and invokes AxiDraw commands"""
 
-    states = ["stopped", "started"]
+    states = ["idle", "initializing_axidraw", 'loading_image', 'drawing', 'final_guessing', 'completing']
+    transitions = [
+        {'trigger': 'start', 'source': 'idle', 'dest': 'initializing_axidraw'},
+        {'trigger': 'axidraw_ready', 'source': 'initializing_axidraw', 'dest': 'loading_image'},
+        {'trigger': 'image_loaded', 'source': 'loading_image', 'dest': 'drawing'},
+        {'trigger': 'correct_guess_early', 'source': 'drawing', 'dest': 'completing'},
+        {'trigger': 'drawing_complete', 'source': 'drawing', 'dest': 'final_guessing'},
+        {'trigger': 'corrrect_guess_late', 'source': 'final_guessing', 'dest': 'completing'},
+        {'trigger': 'guess_timeout', 'source': 'final_guessing', 'dest': 'completing'},
+        {'trigger': 'completed', 'source': 'completing', 'dest': 'idle'},
+    ]
 
     def __init__(self):
         # Initialize the state machine
-        self._machine = Machine(model=self, states=GameManager.states, initial="stopped")
-
-        # Add state transitions
-        self._machine.add_transition(trigger="start", source="stopped", dest="started")
-        self._machine.add_transition(trigger="stop", source="started", dest="stopped")
+        self._machine = Machine(model=self, states=GameManager.states, transitions=GameManager.transitions, initial="idle")
 
         # Init the quickdraw api client
         self._qd = QuickDrawData()
@@ -36,7 +42,7 @@ class GameManager:
         self._ad.connect()
         self._ad.moveto(1,1)
 
-    def on_enter_stopped(self):
+    def on_enter_idle(self):
         # TODO: Clean up, lift up pen, etc
         # Move back to home
         self._ad.moveto(0,0)
