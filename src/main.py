@@ -6,10 +6,15 @@ from fastapi import FastAPI
 from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
 from game_manager import GameManager
+from pydantic import BaseModel
 
 app = FastAPI()
 
 log = logging.getLogger(__name__)
+
+
+class GuessRequest(BaseModel):
+    guess: str
 
 
 @app.post("/startGame")
@@ -19,12 +24,9 @@ async def start_game():
 
 
 @app.post("/guess")
-async def guess():
-    params = request.params
-    guess_correct = True
-    if guess_correct:
-
-    return {"message": "TODO: This will register a guess."}
+async def guess(guess_request: GuessRequest):
+    guessed_correctly = game_manager.drawing_name == guess_request.guess
+    return {"message": f"TODO: This guess was {guessed_correctly}."}
 
 
 @app.post("/startCameraFeed")
