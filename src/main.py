@@ -3,6 +3,8 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 
+from pyaxidraw.axidraw import AxiDraw
+from quickdraw import QuickDrawData
 from game_manager import GameManager
 
 app = FastAPI()
@@ -27,5 +29,8 @@ async def start_camera_feed():
 
 
 if __name__ == "__main__":
-    game_manager = GameManager()
-    uvicorn.run(app)
+    axidraw_client = AxiDraw()
+    quickdraw_client = QuickDrawData()
+    game_manager = GameManager(axidraw_client, quickdraw_client)
+
+    uvicorn.run(app, host="0.0.0.0")
