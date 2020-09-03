@@ -22,8 +22,11 @@ async def start_game():
 async def guess():
     params = request.params
     guess_correct = True
+    timeout = True
     if guess_correct:
-
+        draw_success()
+    if timeout:
+        draw_failure()
     return {"message": "TODO: This will register a guess."}
 
 
