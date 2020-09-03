@@ -67,7 +67,7 @@ class GameManager:
         # Select a drawing at random
         self.drawing_name = random.choice(self._qd.drawing_names)
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
-        self.image_loaded()
+        await self.image_loaded()
 
     async def on_enter_idle(self):
         # Move back to home
@@ -76,10 +76,10 @@ class GameManager:
 
     async def on_enter_drawing(self):
         self._draw_pic(self.drawing_object)
-        self.drawing_complete()
+        await self.drawing_complete()
 
     async def on_enter_final_guessing(self):
-        self.guess_timeout()
+        await self.guess_timeout()
 
     async def on_enter_completing(self):
         self.drawing_name = None
@@ -88,7 +88,7 @@ class GameManager:
         self._ad.options.speed_penup = 100
         self._ad.update()
 
-        self.completed()
+        await self.completed()
 
     def _draw_pic(self, drawing):
         self._ad.options.speed_pendown = 5

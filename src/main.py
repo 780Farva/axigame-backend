@@ -11,7 +11,13 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
+logging.basicConfig(level=logging.DEBUG)
+
 log = logging.getLogger(__name__)
+
+axidraw_client = AxiDraw()
+quickdraw_client = QuickDrawData()
+game_manager = GameManager(axidraw_client, quickdraw_client)
 
 
 class GuessRequest(BaseModel):
@@ -20,24 +26,37 @@ class GuessRequest(BaseModel):
 
 @app.post("/startGame")
 async def start_game():
-    game_manager.start()
-    return {"message": f"Game is now in state: {game_manager.state}"}
+    if game_manager.state == "idle":
+        await game_manager.start()
+        return {"message": f"Game is now started."}
+    else:
+        return {
+            "message": f"There is already an active game in state {game_manager.state}."
+        }
 
 
 @app.post("/guess")
 async def guess(guess_request: GuessRequest):
-    guess = guess_request.guess.lower()
-    truth = game_manager.drawing_name
-    if len(truth.split()) > 1:
-        # we have two words, let's guess at least one:
-        guessed_correctly = np.any([(fuzz.ratio(truth, word) > 85) for word in truth.split()])
+    if game_manager.state in ["drawing", "final_guessing"]:
+        guess = guess_request.guess.lower()
+        truth = game_manager.drawing_name
+        log.debug(f"Comparing guess {guess} to truth {truth}.")
+        if len(truth.split()) > 1:
+            # we have two words, let's guess at least one:
+            guessed_correctly = np.any(
+                [(fuzz.ratio(truth, word) > 85) for word in truth.split()]
+            )
+        else:
+            guessed_correctly = fuzz.ratio(truth, guess) > 80
+
+        if guessed_correctly:
+            # Stop drawing, do next image
+            print("Correct! Next image...")
+            game_manager.correct_guess_early()
+        return {"message": f"TODO: This guess was {guessed_correctly}."}
     else:
-        guessed_correctly = fuzz.ratio(truth, guess) > 80
-    if guessed_correctly:
-        # Stop drawing, do next image
-        print('Correct! Next image...')
-        game_manager.correct_guess_early()
-    return {"message": f"TODO: This guess was {guessed_correctly}."}
+        # TODO: Return with a meaningful status code
+        return {"message": f"Not ready. Game is in state {game_manager.state}"}
 
 
 @app.post("/startCameraFeed")
@@ -46,8 +65,4 @@ async def start_camera_feed():
 
 
 if __name__ == "__main__":
-    axidraw_client = AxiDraw()
-    quickdraw_client = QuickDrawData()
-    game_manager = GameManager(axidraw_client, quickdraw_client)
-
-    uvicorn.run(app, host="0.0.0.0")
+    uvicorn.run(app, host="0.0.0.0", loop="asyncio", debug=True)
