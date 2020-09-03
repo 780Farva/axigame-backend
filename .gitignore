@@ -138,3 +138,4 @@ cython_debug/
 
 # IntelliJ
 .idea/
+/src/.quickdrawcache/
