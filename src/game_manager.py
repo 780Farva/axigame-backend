@@ -59,7 +59,7 @@ class GameManager:
     def on_enter_initializing_axidraw(self):
         self._ad.interactive()
         self._ad.connect()
-        self._ad.options.speed_pendown = 1
+        self._ad.options.speed_pendown = 5
         self._ad.options.speed_penup = 100
         self._ad.options.units = 2
         self._ad.update()
@@ -77,12 +77,8 @@ class GameManager:
         self._ad.disconnect()
 
     def on_enter_drawing(self):
-        try:
-            self._draw_pic(self.drawing_object)
-        except:
-            pass
-        finally:
-            self.drawing_complete()
+        self._draw_pic(self.drawing_object)
+        self.drawing_complete()
 
     def on_enter_final_guessing(self):
         self.guess_timeout()
@@ -90,16 +86,7 @@ class GameManager:
     def on_enter_completing(self):
         self.completed()
 
-    def _draw_pic(self, drawing):
-        fig, ax = plt.subplots(figsize=(2, 2))
-        for stroke in drawing.strokes:
-            x = [pt[0] for pt in stroke]
-            y = [pt[1] for pt in stroke]
-            ax.plot(x, y)
-        ax.set_title(drawing.name)
-        return fig, ax
-
-    def _reshape_strokes(self, drawing, scale=5):
+    def _reshape_strokes(self, drawing, scale=6):
         """
         Return list of dictionaries with strokes
         """
@@ -119,6 +106,18 @@ class GameManager:
             lines.append(line)
         return lines
 
+    def _draw_pic(self, drawing):
+        lines = self._reshape_strokes(drawing, scale=6)
+        reference_xy = np.random.uniform(low=0, high=250, size=1)[0], \
+                       np.random.uniform(low=0, high=150, size=1)[0]
+        try:
+            self._draw_lines(self._ad, lines, reference_xy=reference_xy)
+            return True
+        except:
+            return False
+        #finally:
+        #    return True
+
     def _draw_one_line(self, ad, l):
         start = l["x"][0], l["y"][0]
         # Move to first point in stroke
@@ -133,17 +132,15 @@ class GameManager:
             self._draw_one_line(ad, l)
 
     def test(self):
+        reference_xy = np.random.uniform(low=0, high=250, size=1)[0], \
+                       np.random.uniform(low=0, high=150, size=1)[0]
         try:
             drawing = self._qd.get_drawing(name="key", index=1)
-
             st.write(f"strokes : {drawing.no_of_strokes}")
             fig, ax = self._draw_pic(drawing)
             fig.savefig("test.png")
             lines = self._reshape_strokes(drawing, scale=5)
-            self._draw_lines(self._ad, lines, reference_xy=(102, 102))
-        #     st.pyplot(fig,figsize=(2, 2))
-        #    st.write(lines)
-
+            self._draw_lines(self._ad, lines, reference_xy=reference_xy)
         finally:
             self._ad.moveto(0, 0)
             self._ad.disconnect()

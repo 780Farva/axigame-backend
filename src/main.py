@@ -20,6 +20,10 @@ async def start_game():
 
 @app.post("/guess")
 async def guess():
+    params = request.params
+    guess_correct = True
+    if guess_correct:
+
     return {"message": "TODO: This will register a guess."}
 
 
