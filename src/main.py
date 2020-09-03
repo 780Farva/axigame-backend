@@ -20,6 +20,6 @@ async def guess():
 async def start_camera_feed():
     return {"message": "TODO: This will start the camera feed."}
 
-if __name__ is "__main__":
+if __name__ == "__main__":
     game_manager = GameManager()
     uvicorn.run(app)
