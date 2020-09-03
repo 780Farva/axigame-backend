@@ -68,7 +68,7 @@ class GameManager:
             self._ad.options.speed_penup = 100
             self._ad.options.units = 2
             self._ad.update()
-        await self.axidraw_ready()
+        self.axidraw_ready()
 
     def on_enter_loading_image(self):
         # Select a drawing at random
