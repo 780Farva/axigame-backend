@@ -2,14 +2,20 @@ import logging
 
 import uvicorn
 from fastapi import FastAPI
+from fuzzywuzzy import fuzz
 
 from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
 from game_manager import GameManager
+from pydantic import BaseModel
 
 app = FastAPI()
 
 log = logging.getLogger(__name__)
+
+
+class GuessRequest(BaseModel):
+    guess: str
 
 
 @app.post("/startGame")
@@ -19,15 +25,10 @@ async def start_game():
 
 
 @app.post("/guess")
-async def guess():
-    params = request.params
-    guess_correct = True
-    timeout = True
-    if guess_correct:
-        draw_success()
-    if timeout:
-        draw_failure()
-    return {"message": "TODO: This will register a guess."}
+async def guess(guess_request: GuessRequest):
+    guess = guess_request.guess.lower()
+    guessed_correctly = fuzz.ratio(game_manager.drawing_name, guess) > 80
+    return {"message": f"TODO: This guess was {guessed_correctly}."}
 
 
 @app.post("/startCameraFeed")

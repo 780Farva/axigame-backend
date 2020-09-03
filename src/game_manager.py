@@ -85,6 +85,8 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_completing(self):
+        self.drawing_name = None
+        self.drawing_object = None
         self.completed()
 
     def _draw_pic(self, drawing):
