@@ -41,8 +41,8 @@ def _draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0)):
 def draw_pic_from_drawing(ad, drawing):
     lines = _reshape_strokes(drawing, scale=6)
     reference_xy = (
-        np.random.uniform(low=0, high=250, size=1)[0],
-        np.random.uniform(low=0, high=150, size=1)[0],
+        np.random.uniform(low=10, high=270, size=1).astype(np.int64)[0],
+        np.random.uniform(low=10, high=190, size=1).astype(np.int64)[0],
     )
     try:
         _draw_lines(ad, lines, reference_xy=reference_xy)

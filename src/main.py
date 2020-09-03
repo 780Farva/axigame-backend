@@ -35,10 +35,11 @@ async def start_game():
         }
 
 
-@app.post("/guess")
-async def guess(guess_request: GuessRequest):
+@app.get("/guess/{guess_request}")
+async def guess(guess_request: str):
+    log.warning(f'==================Processing request: {guess_request}')
     if game_manager.state in ["drawing", "final_guessing"]:
-        guess = guess_request.guess.lower()
+        guess = guess_request.lower()
         truth = game_manager.drawing_name
         log.debug(f"Comparing guess {guess} to truth {truth}.")
         if len(truth.split()) > 1:
@@ -53,10 +54,14 @@ async def guess(guess_request: GuessRequest):
             # Stop drawing, do next image
             print("Correct! Next image...")
             game_manager.correct_guess_early()
-        return {"message": f"TODO: This guess was {guessed_correctly}."}
+        #return {"message": f"TODO: This guess was {guessed_correctly}."}
+        print(f"TODO: This guess was {guessed_correctly}.")
+        return True
     else:
         # TODO: Return with a meaningful status code
-        return {"message": f"Not ready. Game is in state {game_manager.state}"}
+        #return {"message": f"Not ready. Game is in state {game_manager.state}"}
+        print(f"Not ready. Game is in state {game_manager.state}")
+        return False
 
 
 @app.post("/startCameraFeed")

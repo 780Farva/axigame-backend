@@ -7,7 +7,7 @@ from transitions.extensions.asyncio import AsyncMachine
 from utils import _reshape_strokes, draw_pic_from_drawing
 
 log = logging.getLogger(__name__)
-
+PEN_SLOW = 50
 
 class GameManager:
     """Handles the game's states and invokes AxiDraw commands"""
@@ -61,12 +61,12 @@ class GameManager:
         self._ad.options.speed_penup = 100
         self._ad.options.units = 2
         self._ad.update()
-        self.axidraw_ready()
+        await self.axidraw_ready()
 
     async def on_enter_loading_image(self):
         # Select a drawing at random
-        #self.drawing_name = random.choice(self._qd.drawing_names)
-        self.drawing_name = 'frying pan'
+        self.drawing_name = random.choice(self._qd.drawing_names)
+        #self.drawing_name = 'frying pan'
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
         await self.image_loaded()
 
@@ -87,12 +87,14 @@ class GameManager:
         self.drawing_object = None
         self._ad.options.speed_pendown = 75
         self._ad.options.speed_penup = 100
+        self._ad.options.units = 2
         self._ad.update()
 
         await self.completed()
 
     def _draw_pic(self, drawing):
-        self._ad.options.speed_pendown = 5
+        self._ad.options.speed_pendown = PEN_SLOW
         self._ad.options.speed_penup = 100
+        self._ad.options.units = 2
         self._ad.update()
         draw_pic_from_drawing(self._ad, drawing)
