@@ -9,10 +9,12 @@ httptools==0.1.1
 idna==2.10
 ink-extensions==1.1.0
 lxml==4.5.2
+Pillow==7.2.0
 plotink==1.0.0
 pyaxidraw==2.6.3
 pydantic==1.6.1
 pyserial==3.4
+quickdraw==0.1.0
 requests==2.24.0
 six==1.15.0
 starlette==0.13.6
