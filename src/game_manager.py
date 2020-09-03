@@ -28,7 +28,7 @@ class GameManager:
     def on_enter_started(self):
         # Go grab a hamburger
         # TODO: Make this chose a random topic from a group of valid topics
-        self._qd.get_drawing("hamburger")
+#        self._qd.get_drawing("hamburger")
 
         # Show some sign of life on the axidraw
         # TODO: Make this start drawing out the hamburger or what have you.
@@ -41,3 +41,9 @@ class GameManager:
         # Move back to home
         self._ad.moveto(0,0)
         self._ad.disconnect()
+    def moveto(self,x,y):
+        """
+        For tests.
+
+        """
+        self._ad.moveto(x,y)
