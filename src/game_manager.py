@@ -1,12 +1,9 @@
 import logging
 import random
 
-import matplotlib.pyplot as plt
-import numpy as np
-import streamlit as st
 from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
-from transitions import Machine
+from transitions.extensions.asyncio import AsyncMachine
 from utils import _reshape_strokes, draw_pic_from_drawing
 
 log = logging.getLogger(__name__)
@@ -44,7 +41,7 @@ class GameManager:
 
     def __init__(self, axidraw_client: AxiDraw, quick_draw_data: QuickDrawData):
         # Initialize the state machine
-        self._machine = Machine(
+        self._machine = AsyncMachine(
             model=self,
             states=GameManager.states,
             transitions=GameManager.transitions,
@@ -57,7 +54,7 @@ class GameManager:
         self.drawing_name = None
         self.drawing_object = None
 
-    def on_enter_initializing_axidraw(self):
+    async def on_enter_initializing_axidraw(self):
         self._ad.interactive()
         self._ad.connect()
         self._ad.options.speed_pendown = 5
@@ -66,42 +63,28 @@ class GameManager:
         self._ad.update()
         self.axidraw_ready()
 
-    def on_enter_loading_image(self):
+    async def on_enter_loading_image(self):
         # Select a drawing at random
         self.drawing_name = random.choice(self._qd.drawing_names)
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
         self.image_loaded()
 
-    def on_enter_idle(self):
+    async def on_enter_idle(self):
         # Move back to home
         self._ad.moveto(0, 0)
         self._ad.disconnect()
 
-    def on_enter_drawing(self):
+    async def on_enter_drawing(self):
         self._draw_pic(self.drawing_object)
         self.drawing_complete()
 
-    def on_enter_final_guessing(self):
+    async def on_enter_final_guessing(self):
         self.guess_timeout()
 
-    def on_enter_completing(self):
+    async def on_enter_completing(self):
         self.drawing_name = None
         self.drawing_object = None
         self.completed()
 
     def _draw_pic(self, drawing):
         draw_pic_from_drawing(self._ad, drawing)
-
-    # def test(self):
-    #     reference_xy = np.random.uniform(low=0, high=250, size=1)[0], \
-    #                    np.random.uniform(low=0, high=150, size=1)[0]
-    #     try:
-    #         drawing = self._qd.get_drawing(name="key", index=1)
-    #         st.write(f"strokes : {drawing.no_of_strokes}")
-    #         fig, ax = self._draw_pic(drawing)
-    #         fig.savefig("test.png")
-    #         lines = self._reshape_strokes(drawing, scale=5)
-    #         self._draw_lines(self._ad, lines, reference_xy=reference_xy)
-    #     finally:
-    #         self._ad.moveto(0, 0)
-    #         self._ad.disconnect()
