@@ -48,23 +48,32 @@ def draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0)):
         ad.moveto(reference_xy[0], reference_xy[1])
         draw_one_line(ad, l)
 
+def draw_pic_from_lines(lines, reference_xy=(0, 0)):
+    # Goto ref
+    fig, ax = plt.subplots(figsize=(2, 2))
+
+    for l in lines:
+        ax.plot(l['x'],l['y'])
+    return fig,ax
 
 ad = AxiDraw()
 ad.interactive()
 ad.connect()
-ad.options.speed_pendown=1
+ad.options.speed_pendown=5
 ad.options.speed_penup=100
 ad.options.units = 2
 ad.update()
 try:
     # 6435186029887488
-    drawing = qd.get_drawing(name='key',index = 1)
+    drawing = qd.get_drawing(name='key')
 
     st.write(f'strokes : {drawing.no_of_strokes}')
-    fig, ax = draw_pic(drawing)
+    lines = reshape_strokes(drawing,scale=6)
+    fig, ax = draw_pic_from_lines(lines)
     fig.savefig('test.png')
-    lines = reshape_strokes(drawing,scale=5)
-    draw_lines(ad,lines,reference_xy=(102,102))
+
+    reference_xy = np.random.uniform(low=0,high=250,size=1)[0],  np.random.uniform(low=0, high=150, size=1)[0]
+    #draw_lines(ad,lines,reference_xy=reference_xy)
 #     st.pyplot(fig,figsize=(2, 2))
 #    st.write(lines)
 
