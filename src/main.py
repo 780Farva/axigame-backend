@@ -33,6 +33,10 @@ async def guess(guess_request: GuessRequest):
         guessed_correctly = np.any([(fuzz.ratio(truth, word) > 85) for word in truth.split()])
     else:
         guessed_correctly = fuzz.ratio(truth, guess) > 80
+    if guessed_correctly:
+        # Stop drawing, do next image
+        print('Correct! Next image...')
+        game_manager.correct_guess_early()
     return {"message": f"TODO: This guess was {guessed_correctly}."}
 
 

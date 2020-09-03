@@ -87,9 +87,16 @@ class GameManager:
     def on_enter_completing(self):
         self.drawing_name = None
         self.drawing_object = None
+        self._ad.options.speed_pendown = 75
+        self._ad.options.speed_penup = 100
+        self._ad.update()
+
         self.completed()
 
     def _draw_pic(self, drawing):
+        self._ad.options.speed_pendown = 5
+        self._ad.options.speed_penup = 100
+        self._ad.update()
         draw_pic_from_drawing(self._ad, drawing)
 
     # def test(self):
