@@ -1,5 +1,5 @@
 import logging
-
+import numpy as np
 import uvicorn
 from fastapi import FastAPI
 from fuzzywuzzy import fuzz
@@ -27,7 +27,12 @@ async def start_game():
 @app.post("/guess")
 async def guess(guess_request: GuessRequest):
     guess = guess_request.guess.lower()
-    guessed_correctly = fuzz.ratio(game_manager.drawing_name, guess) > 80
+    truth = game_manager.drawing_name
+    if len(truth.split()) > 1:
+        # we have two words, let's guess at least one:
+        guessed_correctly = np.any([(fuzz.ratio(truth, word) > 85) for word in truth.split()])
+    else:
+        guessed_correctly = fuzz.ratio(truth, guess) > 80
     return {"message": f"TODO: This guess was {guessed_correctly}."}
 
 
