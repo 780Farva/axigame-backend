@@ -111,6 +111,7 @@ class GameManager:
             self._ad.disconnect()
 
     def on_enter_drawing(self):
+        self.time = time()
         if self._sim:
             log.info("SIMULATION sleeping")
             sleep(10)
@@ -142,7 +143,6 @@ class GameManager:
         self._ad.options.units = 2
         self._ad.update()
         self.is_drawing = True
-        self.time = time()
         xy = random.choice(self.grid)
         draw_pic_from_drawing(self._ad, drawing, scale=self.scale,
                               reference_xy=xy, flag_callback=self.flag_callback)

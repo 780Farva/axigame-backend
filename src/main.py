@@ -4,6 +4,7 @@ from time import time
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, Response, status
+from fastapi.responses import JSONResponse, RedirectResponse
 from fuzzywuzzy import fuzz
 
 from pyaxidraw.axidraw import AxiDraw
@@ -22,13 +23,16 @@ log = logging.getLogger(__name__)
 
 axidraw_client = AxiDraw()
 quickdraw_client = QuickDrawData()
-game_manager = GameManager(axidraw_client, quickdraw_client)
+game_manager = GameManager(axidraw_client, quickdraw_client, sim=True)
 game_thread = None
 
 
 class GuessRequest(BaseModel):
     guess: str
 
+@app.get("/")
+def root():
+    return RedirectResponse(url="/docs")
 
 @app.post("/startGame")
 async def start_game():
@@ -64,10 +68,10 @@ async def guess(guess_request: str, response: Response):
         if guessed_correctly:
             # Stop drawing, do next image
             log.info("Correct! Next image...")
-            log.info(f'Time elapsed : {(time() - game_manager.time):.2f}s')
             game_manager.flag = True
-        log.info(f"This guess was {guessed_correctly}.")
-        return guessed_correctly
+        guess_time = time() - game_manager.time
+        log.info(f'The {guess_request} guess was {guessed_correctly}. Time elapsed : {(guess_time):.2f}s')
+        return JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
     else:
         log.info(f"Not ready. Game is in state {game_manager.state}")
         response.status_code = status.HTTP_204_NO_CONTENT
