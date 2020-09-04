@@ -99,7 +99,7 @@ class GameManager:
             self._ad.connect()
             self._ad.options.speed_pendown = PEN_SLOW
             self._ad.options.speed_penup = PEN_FAST
-            self._ad.options.units = 3
+            self._ad.options.units = 2
             self._ad.update()
         self.axidraw_ready()
 
