@@ -10,7 +10,6 @@ from quickdraw import QuickDrawData
 from transitions import Machine
 import requests
 
-from game_manager import GameManager
 from utils import draw_pic_from_drawing
 
 log = logging.getLogger(__name__)
