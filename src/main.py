@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse, RedirectResponse
 from pyaxidraw.axidraw import AxiDraw
 from pydantic import BaseModel
 from quickdraw import QuickDrawData
-
+import urllib
 from game_manager import GameManager
 
 app = FastAPI()
@@ -62,8 +62,8 @@ async def start_game():
 async def guess(guess_request: str, response: Response):
     log.warning(f'==================Processing request: {guess_request}')
     if game_manager.state in ["drawing", "final_guessing"]:
-        decoded = urllib.
-        guessed_correctly, guess_time = game_manager.try_guess(guess_request.lower())
+        decoded = urllib.parse.unquote(guess_request)
+        guessed_correctly, guess_time = game_manager.try_guess(decoded.lower())
         log.info(f'The {guess_request} guess was {guessed_correctly}. Time elapsed : {(guess_time):.2f}s')
         return JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
     else:
