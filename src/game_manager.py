@@ -11,6 +11,7 @@ from quickdraw import QuickDrawData
 from transitions import Machine
 
 from utils import draw_pic_from_drawing
+import urllib
 
 log = logging.getLogger(__name__)
 PEN_SLOW = 5
@@ -86,7 +87,7 @@ class GameManager:
         self.fast_forward_flag = False
         self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
-        self._reference_xy = (0,0)
+        self._reference_xy = (0, 0)
         self.retry_count = 0
 
     def on_enter_initializing_axidraw(self):
@@ -147,11 +148,18 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_handling_no_guess(self):
+        self.retry_count += 1
         try:
-            response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{self.drawing_name}", timeout=1)
+            hint = ''
+            for index, char in enumerate(self.drawing_name):
+                if index % self.retry_count + 1:
+                    hint.join(char)
+                else:
+                    hint.join('*')
+            response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(hint)}", timeout=1)
             log.debug(f"No winner response status: {response.status_code}")
         except:
-            log.exception("crap")
+            pass
 
         # Choose a new drawing and speed up
         self._ad.options.speed_pendown = PEN_FAST
@@ -159,11 +167,16 @@ class GameManager:
         self._ad.options.units = 2
         self._ad.update()
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
-        self.retry_count += 1
         if self.retry_count < 3:
             self.no_guess_handled()
         else:
             self.give_up()
+            try:
+                response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(self.drawing_name)}",
+                                        timeout=1)
+                log.debug(f"No winner response status: {response.status_code}")
+            except:
+                pass
 
     def on_enter_completing(self):
         log.info(f'The drawing was: {self.drawing_name}')
