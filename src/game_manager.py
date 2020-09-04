@@ -100,8 +100,7 @@ class GameManager:
 
     def on_enter_loading_image(self):
         # Select a drawing at random
-        # self.drawing_name = random.choice(self._qd.drawing_names)
-        self.drawing_name = 'anvil'
+        self.drawing_name = random.choice(self._qd.drawing_names)
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
         self.image_loaded()
 
