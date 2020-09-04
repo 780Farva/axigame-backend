@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Response, status
 from fuzzywuzzy import fuzz
 
 from pyaxidraw.axidraw import AxiDraw
@@ -44,7 +44,7 @@ async def start_game():
 
 
 @app.get("/guess/{guess_request}")
-async def guess(guess_request: str):
+async def guess(guess_request: str, response: Response):
     log.warning(f'==================Processing request: {guess_request}')
     if game_manager.state in ["drawing", "final_guessing"]:
         guess = guess_request.lower()
@@ -62,14 +62,11 @@ async def guess(guess_request: str):
             # Stop drawing, do next image
             print("Correct! Next image...")
             game_manager.correct_guess_early()
-        # return {"message": f"TODO: This guess was {guessed_correctly}."}
-        print(f"TODO: This guess was {guessed_correctly}.")
+        log.info(f"TODO: This guess was {guessed_correctly}.")
         return guessed_correctly
     else:
-        # TODO: Return with a meaningful status code
-        # return {"message": f"Not ready. Game is in state {game_manager.state}"}
-        print(f"Not ready. Game is in state {game_manager.state}")
-        return False
+        log.info(f"Not ready. Game is in state {game_manager.state}")
+        response.status_code = status.HTTP_204_NO_CONTENT
 
 
 @app.post("/startCameraFeed")
