@@ -153,9 +153,10 @@ class GameManager:
             hint = ''
             for index, char in enumerate(self.drawing_name):
                 if index % self.retry_count + 1:
-                    hint.join(char)
+                    hint = hint.join(char)
                 else:
-                    hint.join('*')
+                    hint = hint.join('*')
+            log.debug(f"Hint: {hint}")
             response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(hint)}", timeout=1)
             log.debug(f"No winner response status: {response.status_code}")
         except:
