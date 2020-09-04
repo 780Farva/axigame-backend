@@ -134,7 +134,7 @@ class GameManager:
             self.drawing_complete()
 
     def on_enter_final_guessing(self):
-        for sleep_second in range(24):
+        for sleep_second in range(6):
             sleep(0.5)
             if self.guessed_correctly_flag:
                 self.correct_guess_late()
@@ -144,7 +144,7 @@ class GameManager:
 
     def on_enter_handling_no_guess(self):
         try:
-            response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{self.drawing_name}")
+            response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{self.drawing_name}", timeout=1)
             log.debug(f"No winner response status: {response.status_code}")
         except:
             log.exception("crap")
