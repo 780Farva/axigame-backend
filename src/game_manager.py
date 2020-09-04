@@ -4,16 +4,17 @@ from itertools import product
 from time import sleep, time
 
 import numpy as np
+import requests
 from fuzzywuzzy import fuzz
 from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
 from transitions import Machine
-import requests
 
 from utils import draw_pic_from_drawing
 
 log = logging.getLogger(__name__)
 PEN_SLOW = 5
+PEN_FAST = 100
 MAXGAMES = 12
 
 
@@ -58,7 +59,7 @@ class GameManager:
             "dest": "completing",
         },
         {"trigger": "guess_timeout", "source": "final_guessing", "dest": "handling_no_guess"},
-        {"trigger": "no_guess_handled", "source": "handling_no_guess", "dest": "completing"},
+        {"trigger": "no_guess_handled", "source": "handling_no_guess", "dest": "drawing"},
         {"trigger": "completed", "source": "completing", "dest": "idle"},
     ]
 
@@ -84,6 +85,7 @@ class GameManager:
         self.fast_forward_flag = False
         self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
+        self._reference_xy = (0,0)
 
     def on_enter_initializing_axidraw(self):
         if self._sim:
@@ -92,8 +94,8 @@ class GameManager:
         else:
             self._ad.interactive()
             self._ad.connect()
-            self._ad.options.speed_pendown = 5
-            self._ad.options.speed_penup = 100
+            self._ad.options.speed_pendown = PEN_SLOW
+            self._ad.options.speed_penup = PEN_FAST
             self._ad.options.units = 2
             self._ad.update()
         self.axidraw_ready()
@@ -102,6 +104,8 @@ class GameManager:
         # Select a drawing at random
         self.drawing_name = random.choice(self._qd.drawing_names)
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
+
+        self._reference_xy = random.choice(self.grid)
         self.image_loaded()
 
     def on_enter_idle(self):
@@ -139,8 +143,18 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_handling_no_guess(self):
-        response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{self.drawing_name}")
-        log.debug(f"No winner response status: {response.status_code}")
+        try:
+            response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{self.drawing_name}")
+            log.debug(f"No winner response status: {response.status_code}")
+        except:
+            log.exception("crap")
+
+        # Choose a new drawing and speed up
+        self._ad.options.speed_pendown = PEN_FAST
+        self._ad.options.speed_penup = PEN_FAST
+        self._ad.options.units = 2
+        self._ad.update()
+        self.drawing_object = self._qd.get_drawing(self.drawing_name)
         self.no_guess_handled()
 
     def on_enter_completing(self):
@@ -160,14 +174,9 @@ class GameManager:
         return tmp
 
     def _draw_pic(self, drawing):
-        self._ad.options.speed_pendown = PEN_SLOW
-        self._ad.options.speed_penup = 100
-        self._ad.options.units = 2
-        self._ad.update()
         self.is_drawing = True
-        xy = random.choice(self.grid)
         draw_pic_from_drawing(self._ad, drawing, scale=self.scale,
-                              reference_xy=xy, flag_callback=self.flag_callback)
+                              reference_xy=self._reference_xy, flag_callback=self.flag_callback)
         self.is_drawing = False
 
     def try_guess(self, guess):
