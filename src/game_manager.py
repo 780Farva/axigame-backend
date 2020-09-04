@@ -111,7 +111,7 @@ class GameManager:
             sleep(1)
         else:
             # Move back to home
-            print('----Moving home!')
+            log.info('----Moving home!')
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
@@ -122,6 +122,8 @@ class GameManager:
             sleep(10)
         else:
             self._draw_pic(self.drawing_object)
+            self._ad.moveto(0, 0)
+            log.info('----Drawing complete!')
 
         if self.guessed_correctly_flag:
             self.correct_guess_early()
