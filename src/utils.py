@@ -1,5 +1,30 @@
+import pickle
+import random
+
 import numpy as np
 from pyaxidraw.axidraw import AxiDraw
+from skimage.transform import resize
+from tensorflow.python.keras.models import load_model
+
+model = load_model('/home/anton/Repos/axigame-backend/model.h5')
+with open('/home/anton/Repos/axigame-backend/le.pkl', 'rb') as f:
+    le = pickle.load(f)
+
+
+def rgb2gray(rgb):
+    r, g, b = rgb[:, :, 0], rgb[:, :, 1], rgb[:, :, 2]
+    gray = 0.2989 * r + 0.5870 * g + 0.1140 * b
+    gray = resize(gray, (64, 64))
+    return gray
+
+
+def pred_image(drawing, model, le):
+    im = rgb2gray(drawing.image)
+    lab = model.predict(im.reshape(1, 64, 64, 1))
+    top_10 = np.argsort(lab.flatten())[-10:]
+    labels = random.shuffle(le.inverse_transform(top_10))
+
+    return labels
 
 
 def _reshape_strokes(drawing, scale=6):
@@ -28,7 +53,7 @@ def _draw_one_line(ad, l, flag_callback):
     # Move to first point in stroke
     ad.move(*start)
     for x, y in zip(np.diff(l["x"]), np.diff(l["y"])):
-        if not(flag_callback()):
+        if not (flag_callback()):
             ad.line(x, y)
         else:
             print('Updating speeeeeeeeeeeeeeeeeeeeeeeeed!')
@@ -44,11 +69,11 @@ def _draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0),
     # Goto ref
     for l in lines:
         ad.moveto(reference_xy[0], reference_xy[1])
-        _draw_one_line(ad, l,flag_callback=flag_callback)
+        _draw_one_line(ad, l, flag_callback=flag_callback)
 
 
 def draw_pic_from_drawing(ad, drawing, scale, reference_xy=None,
-                          flag_callback = None):
+                          flag_callback=None):
     lines = _reshape_strokes(drawing, scale=scale)
     if reference_xy is None:
         reference_xy = (
