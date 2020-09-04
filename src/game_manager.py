@@ -58,6 +58,7 @@ class GameManager:
             "dest": "completing",
         },
         {"trigger": "guess_timeout", "source": "final_guessing", "dest": "handling_no_guess"},
+        {"trigger": "no_guess_handled", "source": "handling_no_guess", "dest": "completing"},
         {"trigger": "completed", "source": "completing", "dest": "idle"},
     ]
 
@@ -136,13 +137,13 @@ class GameManager:
 
         self.guess_timeout()
 
+    def on_enter_handling_no_guess(self):
+        response = requests.get(url=f"http://10.20.40.83:3000/noWinner/{self.drawing_name}")
+        log.debug(f"No winner response status: {response.status_code}")
+        self.no_guess_handled()
+
     def on_enter_completing(self):
         log.info(f'The drawing was: {self.drawing_name}')
-
-        # TODO: Handle this in it's own state
-        if not self.guessed_correctly_flag:
-            response = requests.get(url=f"http://10.20.40.83:3000/noWinner/{self.drawing_name}")
-            log.debug(f"No winner response status: {response.status_code}")
 
         self.guessed_correctly_flag = False
         self.drawing_name = None
