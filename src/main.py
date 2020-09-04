@@ -10,10 +10,11 @@ from game_manager import GameManager
 from pydantic import BaseModel
 
 from threading import Thread
+from transitions.core import MachineError
 
 app = FastAPI()
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 log = logging.getLogger(__name__)
 
@@ -60,9 +61,12 @@ async def guess(guess_request: str, response: Response):
 
         if guessed_correctly:
             # Stop drawing, do next image
-            print("Correct! Next image...")
-            game_manager.correct_guess_early()
-        log.info(f"TODO: This guess was {guessed_correctly}.")
+            log.info("Correct! Next image...")
+            try:
+                game_manager.correct_guess_early()
+            except MachineError:
+                log.info("Transition ignored, not needed.")
+        log.info(f"This guess was {guessed_correctly}.")
         return guessed_correctly
     else:
         log.info(f"Not ready. Game is in state {game_manager.state}")
