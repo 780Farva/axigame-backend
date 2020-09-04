@@ -152,7 +152,7 @@ class GameManager:
         try:
             hint = ''
             for index, char in enumerate(self.drawing_name):
-                if (index % (self.retry_count + 1)) == 0:
+                if (index % self.retry_count) == 0:
                     hint += char
                 else:
                     hint += '*'
