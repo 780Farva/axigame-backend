@@ -207,10 +207,11 @@ class GameManager:
         guess = guess.lower()
         truth = self.drawing_name
         log.debug(f"Comparing guess {guess} to truth {truth}.")
-        if len(truth.split()) > 1:
+        split_truth = truth.split()
+        if len(split_truth) > 1 and len(guess.split()) != len(split_truth):
             # we have two words, let's guess at least one:
             guessed_correctly = np.any(
-                [(fuzz.ratio(truth, word) > 85) for word in truth.split()]
+                [(fuzz.ratio(truth, word) > 85) for word in split_truth]
             )
         else:
             guessed_correctly = fuzz.ratio(truth, guess) > 80
