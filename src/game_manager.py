@@ -60,6 +60,7 @@ class GameManager:
         },
         {"trigger": "guess_timeout", "source": "final_guessing", "dest": "handling_no_guess"},
         {"trigger": "no_guess_handled", "source": "handling_no_guess", "dest": "drawing"},
+        {"trigger": "give_up", "source": "handling_no_guess", "dest": "completing"},
         {"trigger": "completed", "source": "completing", "dest": "idle"},
     ]
 
@@ -86,6 +87,7 @@ class GameManager:
         self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
         self._reference_xy = (0,0)
+        self.retry_count = 0
 
     def on_enter_initializing_axidraw(self):
         if self._sim:
@@ -117,6 +119,8 @@ class GameManager:
             log.info('----Moving home!')
             self._ad.moveto(0, 0)
             self._ad.disconnect()
+
+        self.retry_count = 0
 
     def on_enter_drawing(self):
         self.time = time()
@@ -155,7 +159,11 @@ class GameManager:
         self._ad.options.units = 2
         self._ad.update()
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
-        self.no_guess_handled()
+        self.retry_count += 1
+        if self.retry_count < 3:
+            self.no_guess_handled()
+        else:
+            self.give_up()
 
     def on_enter_completing(self):
         log.info(f'The drawing was: {self.drawing_name}')
