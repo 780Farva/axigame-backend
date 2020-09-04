@@ -26,9 +26,19 @@ class GuessRequest(BaseModel):
     guess: str
 
 
+@app.on_event("shutdown")
+def shutdown_event():
+    log.info("shutting down")
+    if game_thread is not None:
+        log.debug("Joining game thread")
+        game_thread.join()
+        log.debug("game thread joined")
+
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/docs")
+
 
 
 @app.post("/startGame")
@@ -37,6 +47,7 @@ async def start_game():
     global game_thread
     if game_manager.state == "idle":
         if game_thread is not None:
+            game_thread.join()
             game_thread = None
         game_thread = Thread(target=game_manager.start)
         game_thread.start()
