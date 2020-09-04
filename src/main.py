@@ -64,7 +64,7 @@ async def guess(guess_request: str):
             game_manager.correct_guess_early()
         # return {"message": f"TODO: This guess was {guessed_correctly}."}
         print(f"TODO: This guess was {guessed_correctly}.")
-        return True
+        return guessed_correctly
     else:
         # TODO: Return with a meaningful status code
         # return {"message": f"Not ready. Game is in state {game_manager.state}"}

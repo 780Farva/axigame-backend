@@ -9,7 +9,7 @@ from utils import _reshape_strokes, draw_pic_from_drawing
 from time import sleep
 
 log = logging.getLogger(__name__)
-PEN_SLOW = 50
+PEN_SLOW = 5
 
 class GameManager:
     """Handles the game's states and invokes AxiDraw commands"""
@@ -72,8 +72,8 @@ class GameManager:
 
     def on_enter_loading_image(self):
         # Select a drawing at random
-        self.drawing_name = random.choice(self._qd.drawing_names)
-        #self.drawing_name = 'frying pan'
+        # self.drawing_name = random.choice(self._qd.drawing_names)
+        self.drawing_name = 'anvil'
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
         self.image_loaded()
 
@@ -101,7 +101,7 @@ class GameManager:
         self.drawing_name = None
         self.drawing_object = None
         if not self._sim:
-            self._ad.options.speed_pendown = 75
+            self._ad.options.speed_pendown = 100
             self._ad.options.speed_penup = 100
             self._ad.options.units = 2
             self._ad.update()
