@@ -65,6 +65,7 @@ async def guess(guess_request: str, response: Response):
             # Stop drawing, do next image
             log.info("Correct! Next image...")
             log.info(f'Time elapsed : {(time() - game_manager.time):.2f}s')
+            game_manager.flag = True
         log.info(f"This guess was {guessed_correctly}.")
         return guessed_correctly
     else:

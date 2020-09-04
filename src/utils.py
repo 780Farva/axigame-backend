@@ -23,22 +23,32 @@ def _reshape_strokes(drawing, scale=6):
     return lines
 
 
-def _draw_one_line(ad, l):
+def _draw_one_line(ad, l, flag_callback):
     start = l["x"][0], l["y"][0]
     # Move to first point in stroke
     ad.move(*start)
     for x, y in zip(np.diff(l["x"]), np.diff(l["y"])):
-        ad.line(x, y)
+        if not(flag_callback()):
+            ad.line(x, y)
+        else:
+            print('Updating speeeeeeeeeeeeeeeeeeeeeeeeed!')
+            ad.options.speed_pendown = 100
+            ad.options.speed_penup = 100
+            ad.options.units = 2
+            ad.update()
+            ad.line(x, y)
 
 
-def _draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0)):
+def _draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0),
+                flag_callback=None):
     # Goto ref
     for l in lines:
         ad.moveto(reference_xy[0], reference_xy[1])
-        _draw_one_line(ad, l)
+        _draw_one_line(ad, l,flag_callback=flag_callback)
 
 
-def draw_pic_from_drawing(ad, drawing,scale,reference_xy = None):
+def draw_pic_from_drawing(ad, drawing, scale, reference_xy=None,
+                          flag_callback = None):
     lines = _reshape_strokes(drawing, scale=scale)
     if reference_xy is None:
         reference_xy = (
@@ -46,7 +56,8 @@ def draw_pic_from_drawing(ad, drawing,scale,reference_xy = None):
             np.random.uniform(low=10, high=190, size=1).astype(np.int64)[0],
         )
     try:
-        _draw_lines(ad, lines, reference_xy=reference_xy)
+        _draw_lines(ad, lines, reference_xy=reference_xy,
+                    flag_callback=flag_callback)
         return True
     except Exception as e:
         print(f"Failed! {e}")
