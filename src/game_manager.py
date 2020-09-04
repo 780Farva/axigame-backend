@@ -88,7 +88,7 @@ class GameManager:
         self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
         self._reference_xy = (0, 0)
-        self.retry_count = 0
+        self.retry_count = 2
 
     def on_enter_initializing_axidraw(self):
         if self._sim:
@@ -121,7 +121,7 @@ class GameManager:
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
-        self.retry_count = 3
+        self.retry_count = 2
 
     def on_enter_drawing(self):
         self.time = time()
