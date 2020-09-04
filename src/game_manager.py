@@ -77,7 +77,7 @@ class GameManager:
         self.not_guessed = True
         self.game_count = 0
         self.scale = 6
-        self.flag = False
+        self.fast_forward_flag = False
         self.grid = _get_grid(self.scale + 1)
 
     def on_enter_initializing_axidraw(self):
@@ -131,10 +131,10 @@ class GameManager:
         self.completed()
 
     def flag_callback(self):
-        tmp = self.flag
-        if self.flag:
+        tmp = self.fast_forward_flag
+        if self.fast_forward_flag:
             print('---------------Flag was True, setting to False...')
-            self.flag = False
+            self.fast_forward_flag = False
         return tmp
 
     def _draw_pic(self, drawing):

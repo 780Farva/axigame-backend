@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 
 axidraw_client = AxiDraw()
 quickdraw_client = QuickDrawData()
-game_manager = GameManager(axidraw_client, quickdraw_client, sim=True)
+game_manager = GameManager(axidraw_client, quickdraw_client)
 game_thread = None
 
 
@@ -68,7 +68,7 @@ async def guess(guess_request: str, response: Response):
         if guessed_correctly:
             # Stop drawing, do next image
             log.info("Correct! Next image...")
-            game_manager.flag = True
+            game_manager.fast_forward_flag = True
         guess_time = time() - game_manager.time
         log.info(f'The {guess_request} guess was {guessed_correctly}. Time elapsed : {(guess_time):.2f}s')
         return JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
