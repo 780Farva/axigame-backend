@@ -1,19 +1,14 @@
 import logging
-from time import time
+from threading import Thread
 
-import numpy as np
 import uvicorn
 from fastapi import FastAPI, Response, status
 from fastapi.responses import JSONResponse, RedirectResponse
-from fuzzywuzzy import fuzz
-
 from pyaxidraw.axidraw import AxiDraw
-from quickdraw import QuickDrawData
-from game_manager import GameManager
 from pydantic import BaseModel
+from quickdraw import QuickDrawData
 
-from threading import Thread
-from transitions.core import MachineError
+from game_manager import GameManager
 
 app = FastAPI()
 
@@ -30,9 +25,11 @@ game_thread = None
 class GuessRequest(BaseModel):
     guess: str
 
+
 @app.get("/")
 def root():
     return RedirectResponse(url="/docs")
+
 
 @app.post("/startGame")
 async def start_game():
@@ -54,22 +51,7 @@ async def start_game():
 async def guess(guess_request: str, response: Response):
     log.warning(f'==================Processing request: {guess_request}')
     if game_manager.state in ["drawing", "final_guessing"]:
-        guess = guess_request.lower()
-        truth = game_manager.drawing_name
-        log.debug(f"Comparing guess {guess} to truth {truth}.")
-        if len(truth.split()) > 1:
-            # we have two words, let's guess at least one:
-            guessed_correctly = np.any(
-                [(fuzz.ratio(truth, word) > 85) for word in truth.split()]
-            )
-        else:
-            guessed_correctly = fuzz.ratio(truth, guess) > 80
-
-        if guessed_correctly:
-            # Stop drawing, do next image
-            log.info("Correct! Next image...")
-            game_manager.fast_forward_flag = True
-        guess_time = time() - game_manager.time
+        guessed_correctly, guess_time = game_manager.try_guess(guess_request.lower())
         log.info(f'The {guess_request} guess was {guessed_correctly}. Time elapsed : {(guess_time):.2f}s')
         return JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
     else:

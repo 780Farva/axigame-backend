@@ -1,14 +1,17 @@
 import logging
 import random
+from itertools import product
+from time import sleep, time
 
+import numpy as np
+from fuzzywuzzy import fuzz
 from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
-from transitions.extensions.asyncio import AsyncMachine
 from transitions import Machine
-from utils import _reshape_strokes, draw_pic_from_drawing
-from time import sleep, time
-import numpy as np
-from itertools import product
+import requests
+
+from game_manager import GameManager
+from utils import draw_pic_from_drawing
 
 log = logging.getLogger(__name__)
 PEN_SLOW = 5
@@ -37,6 +40,7 @@ class GameManager:
         "loading_image",
         "drawing",
         "final_guessing",
+        "handling_no_guess",
         "completing",
     ]
     transitions = [
@@ -54,7 +58,7 @@ class GameManager:
             "source": "final_guessing",
             "dest": "completing",
         },
-        {"trigger": "guess_timeout", "source": "final_guessing", "dest": "completing"},
+        {"trigger": "guess_timeout", "source": "final_guessing", "dest": "handling_no_guess"},
         {"trigger": "completed", "source": "completing", "dest": "idle"},
     ]
 
@@ -78,6 +82,7 @@ class GameManager:
         self.game_count = 0
         self.scale = 6
         self.fast_forward_flag = False
+        self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
 
     def on_enter_initializing_axidraw(self):
@@ -117,14 +122,30 @@ class GameManager:
             sleep(10)
         else:
             self._draw_pic(self.drawing_object)
-        self.drawing_complete()
+
+        if self.guessed_correctly_flag:
+            self.correct_guess_early()
+        else:
+            self.drawing_complete()
 
     def on_enter_final_guessing(self):
-        # Failed to guess here
+        for sleep_second in range(24):
+            sleep(0.5)
+            if self.guessed_correctly_flag:
+                self.correct_guess_late()
+                return
+
         self.guess_timeout()
 
     def on_enter_completing(self):
-        print(f'The drawing was: {self.drawing_name}')
+        log.info(f'The drawing was: {self.drawing_name}')
+
+        # TODO: Handle this in it's own state
+        if not self.guessed_correctly_flag:
+            response = requests.get(url=f"http://10.20.40.83:3000/noWinner/{self.drawing_name}")
+            log.debug(f"No winner response status: {response.status_code}")
+
+        self.guessed_correctly_flag = False
         self.drawing_name = None
         self.drawing_object = None
 
@@ -147,3 +168,23 @@ class GameManager:
         draw_pic_from_drawing(self._ad, drawing, scale=self.scale,
                               reference_xy=xy, flag_callback=self.flag_callback)
         self.is_drawing = False
+
+    def try_guess(self, guess):
+        guess = guess.lower()
+        truth = self.drawing_name
+        log.debug(f"Comparing guess {guess} to truth {truth}.")
+        if len(truth.split()) > 1:
+            # we have two words, let's guess at least one:
+            guessed_correctly = np.any(
+                [(fuzz.ratio(truth, word) > 85) for word in truth.split()]
+            )
+        else:
+            guessed_correctly = fuzz.ratio(truth, guess) > 80
+
+        if guessed_correctly:
+            # Stop drawing, do next image
+            log.info("Correct! Next image...")
+            self.fast_forward_flag = True
+            self.guessed_correctly_flag = True
+        guess_time = time() - self.time
+        return guessed_correctly, guess_time
