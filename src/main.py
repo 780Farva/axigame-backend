@@ -1,4 +1,6 @@
 import logging
+from time import time
+
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, Response, status
@@ -62,10 +64,7 @@ async def guess(guess_request: str, response: Response):
         if guessed_correctly:
             # Stop drawing, do next image
             log.info("Correct! Next image...")
-            try:
-                game_manager.correct_guess_early()
-            except MachineError:
-                log.info("Transition ignored, not needed.")
+            log.info(f'Time elapsed : {(time() - game_manager.time):.2f}s')
         log.info(f"This guess was {guessed_correctly}.")
         return guessed_correctly
     else:

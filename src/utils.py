@@ -38,12 +38,13 @@ def _draw_lines(ad: AxiDraw, lines, reference_xy=(0, 0)):
         _draw_one_line(ad, l)
 
 
-def draw_pic_from_drawing(ad, drawing):
-    lines = _reshape_strokes(drawing, scale=6)
-    reference_xy = (
-        np.random.uniform(low=10, high=270, size=1).astype(np.int64)[0],
-        np.random.uniform(low=10, high=190, size=1).astype(np.int64)[0],
-    )
+def draw_pic_from_drawing(ad, drawing,scale,reference_xy = None):
+    lines = _reshape_strokes(drawing, scale=scale)
+    if reference_xy is None:
+        reference_xy = (
+            np.random.uniform(low=10, high=270, size=1).astype(np.int64)[0],
+            np.random.uniform(low=10, high=190, size=1).astype(np.int64)[0],
+        )
     try:
         _draw_lines(ad, lines, reference_xy=reference_xy)
         return True

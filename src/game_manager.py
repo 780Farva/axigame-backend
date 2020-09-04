@@ -6,10 +6,25 @@ from quickdraw import QuickDrawData
 from transitions.extensions.asyncio import AsyncMachine
 from transitions import Machine
 from utils import _reshape_strokes, draw_pic_from_drawing
-from time import sleep
-
+from time import sleep, time
+import numpy as np
+from itertools import product
 log = logging.getLogger(__name__)
 PEN_SLOW = 5
+MAXGAMES = 12
+
+def _get_grid(scale=6):
+    # Odd number of games
+    x_dim = 300 # Total dim
+    y_dim = 200 # Total dim
+    # Max coordinates are 255, hence the size will be 255m / scale
+    size_pic = 255 / scale # 42 mm
+    centers_x = np.linspace(0,x_dim,np.int64(np.floor(x_dim/size_pic)))[:-1]
+    centers_y = np.linspace(0, y_dim, np.int64(np.floor(y_dim / size_pic)))[:-1]
+    # Product of these centers will be reference points:
+    grid = list(product(centers_x,centers_y))
+    return grid
+
 
 class GameManager:
     """Handles the game's states and invokes AxiDraw commands"""
@@ -33,7 +48,7 @@ class GameManager:
         {"trigger": "correct_guess_early", "source": "drawing", "dest": "completing"},
         {"trigger": "drawing_complete", "source": "drawing", "dest": "final_guessing"},
         {
-            "trigger": "corrrect_guess_late",
+            "trigger": "correct_guess_late",
             "source": "final_guessing",
             "dest": "completing",
         },
@@ -56,6 +71,10 @@ class GameManager:
 
         self.drawing_name = None
         self.drawing_object = None
+        self.time = None
+        self.game_count = 0
+        self.scale = 6
+        self.grid = _get_grid(self.scale+1)
 
     def on_enter_initializing_axidraw(self):
         if self._sim:
@@ -83,6 +102,7 @@ class GameManager:
             sleep(1)
         else:
             # Move back to home
+            print('----Moving home!')
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
@@ -95,16 +115,13 @@ class GameManager:
         self.drawing_complete()
 
     def on_enter_final_guessing(self):
+        # Failed to guess here
         self.guess_timeout()
 
     def on_enter_completing(self):
+        print(f'The drawing was: {self.drawing_name}')
         self.drawing_name = None
         self.drawing_object = None
-        if not self._sim:
-            self._ad.options.speed_pendown = 100
-            self._ad.options.speed_penup = 100
-            self._ad.options.units = 2
-            self._ad.update()
 
         self.completed()
 
@@ -113,4 +130,10 @@ class GameManager:
         self._ad.options.speed_penup = 100
         self._ad.options.units = 2
         self._ad.update()
-        draw_pic_from_drawing(self._ad, drawing)
+        self.is_drawing = True
+        self.time = time()
+        xy = random.choice(self.grid)
+        draw_pic_from_drawing(self._ad, drawing,scale=self.scale,
+                              reference_xy=xy)
+        self.is_drawing = False
+
