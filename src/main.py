@@ -65,7 +65,11 @@ async def guess(guess_request: str, response: Response):
         decoded = urllib.parse.unquote(guess_request)
         guessed_correctly, guess_time = game_manager.try_guess(decoded.lower())
         log.info(f'The {guess_request} guess was {guessed_correctly}. Time elapsed : {(guess_time):.2f}s')
-        return JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
+        try:
+            response = JSONResponse(content={"correct": guessed_correctly, "time": guess_time})
+            return response
+        except:
+            log.exception(f"FAILED TO RESPOND WITH {guessed_correctly} and time {guess_time}")
     else:
         log.info(f"Not ready. Game is in state {game_manager.state}")
         response.status_code = status.HTTP_204_NO_CONTENT
