@@ -18,7 +18,7 @@ def rgb2gray(rgb):
     return gray
 
 
-def pred_image(drawing, model, le):
+def pred_image(drawing):
     im = rgb2gray(drawing.image)
     lab = model.predict(im.reshape(1, 64, 64, 1))
     top_10 = np.argsort(lab.flatten())[-10:]

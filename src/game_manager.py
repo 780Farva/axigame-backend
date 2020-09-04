@@ -10,7 +10,7 @@ from pyaxidraw.axidraw import AxiDraw
 from quickdraw import QuickDrawData
 from transitions import Machine
 
-from utils import draw_pic_from_drawing
+from utils import draw_pic_from_drawing, pred_image
 import urllib
 
 log = logging.getLogger(__name__)
@@ -150,6 +150,7 @@ class GameManager:
     def on_enter_handling_no_guess(self):
 
         try:
+            ml_hints = pred_image(self.drawing_object)
             hint = ''
             for index, char in enumerate(self.drawing_name):
                 if (index % self.retry_count) == 0:
@@ -157,6 +158,7 @@ class GameManager:
                 else:
                     hint += '*'
             log.debug(f"Hint: {hint}")
+            hint += str(ml_hints)
             response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(hint)}", timeout=1)
             log.debug(f"No winner response status: {response.status_code}")
         except:
