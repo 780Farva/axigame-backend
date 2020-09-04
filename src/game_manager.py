@@ -121,7 +121,7 @@ class GameManager:
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
-        self.retry_count = 0
+        self.retry_count = 3
 
     def on_enter_drawing(self):
         self.time = time()
@@ -148,14 +148,14 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_handling_no_guess(self):
-        self.retry_count += 1
+        self.retry_count -= 1
         try:
             hint = ''
             for index, char in enumerate(self.drawing_name):
-                if index % self.retry_count + 1:
-                    hint = hint.join(char)
+                if index % self.retry_count:
+                    hint += char
                 else:
-                    hint = hint.join('*')
+                    hint += '*'
             log.debug(f"Hint: {hint}")
             response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(hint)}", timeout=1)
             log.debug(f"No winner response status: {response.status_code}")
@@ -168,9 +168,7 @@ class GameManager:
         self._ad.options.units = 2
         self._ad.update()
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
-        if self.retry_count < 3:
-            self.no_guess_handled()
-        else:
+        if self.retry_count == 0:
             self.give_up()
             try:
                 response = requests.get(url=f"http://10.20.40.57:5000/noWinner/{urllib.parse.quote(self.drawing_name)}",
@@ -178,6 +176,9 @@ class GameManager:
                 log.debug(f"No winner response status: {response.status_code}")
             except:
                 pass
+        else:
+            self.no_guess_handled()
+
 
     def on_enter_completing(self):
         log.info(f'The drawing was: {self.drawing_name}')
