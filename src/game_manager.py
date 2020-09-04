@@ -121,7 +121,7 @@ class GameManager:
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
-        self.retry_count = 2
+        self.retry_count = 3
 
     def on_enter_drawing(self):
         self.time = time()
