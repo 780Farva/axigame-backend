@@ -140,7 +140,7 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_handling_no_guess(self):
-        response = requests.get(url=f"http://10.20.40.83:3000/noWinner/{self.drawing_name}")
+        response = requests.get(url=f"http://10.20.40.57:3000/noWinner/{self.drawing_name}")
         log.debug(f"No winner response status: {response.status_code}")
         self.no_guess_handled()
 
