@@ -221,4 +221,4 @@ class GameManager:
             self.fast_forward_flag = True
             self.guessed_correctly_flag = True
         guess_time = time() - self.time
-        return guessed_correctly, guess_time
+        return np.bool(guessed_correctly), guess_time
