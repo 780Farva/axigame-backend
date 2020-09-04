@@ -88,7 +88,7 @@ class GameManager:
         self.guessed_correctly_flag = False
         self.grid = _get_grid(self.scale + 1)
         self._reference_xy = (0, 0)
-        self.retry_count = 2
+        self.retry_count = 3
 
     def on_enter_initializing_axidraw(self):
         if self._sim:
@@ -121,7 +121,7 @@ class GameManager:
             self._ad.moveto(0, 0)
             self._ad.disconnect()
 
-        self.retry_count = 2
+        self.retry_count = 3
 
     def on_enter_drawing(self):
         self.time = time()
@@ -148,11 +148,11 @@ class GameManager:
         self.guess_timeout()
 
     def on_enter_handling_no_guess(self):
-        self.retry_count -= 1
+
         try:
             hint = ''
             for index, char in enumerate(self.drawing_name):
-                if index % self.retry_count == 0:
+                if (index % self.retry_count) == 0:
                     hint += char
                 else:
                     hint += '*'
@@ -168,6 +168,7 @@ class GameManager:
         self._ad.options.units = 2
         self._ad.update()
         self.drawing_object = self._qd.get_drawing(self.drawing_name)
+        self.retry_count -= 1
         if self.retry_count == 0:
             self.give_up()
             try:
